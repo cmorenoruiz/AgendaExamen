@@ -37,10 +37,19 @@ public class AgendaExamen {
         try {
             Connection conexion = DriverManager.getConnection(url, usuario, password);
             System.out.println("La conexión ha ido bien");
-            Statement ejecutor =conexion.createStatement();
+            Statement ejecutor = conexion.createStatement();
             System.out.println("Ya tengo el objeto ejecutor preparado");
-            String consulta ="SELECT * FROM contactos;";
-            ResultSet resultados=ejecutor.executeQuery(consulta);
+            String consulta = "SELECT * FROM contactos;";
+            ResultSet resultados = ejecutor.executeQuery(consulta);
+            Integer id;
+            String nombre, telefono;
+            while (resultados.next()) {
+                id = resultados.getInt("id");
+                nombre = resultados.getString("nombre");
+                telefono = resultados.getString("telefono");
+                System.out.println(id + nombre + telefono);
+            }
+            //No puedo cerrar las conexiones antes de mostrar los resultados
             ejecutor.close();
             conexion.close();
         } catch (SQLTimeoutException ex) {
