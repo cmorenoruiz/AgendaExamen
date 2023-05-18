@@ -4,12 +4,6 @@
  */
 package agendaexamen;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 import java.util.Scanner;
 
 /**
@@ -21,112 +15,154 @@ public class AgendaExamen {
     /**
      * @param args the command line arguments
      */
-    public static int menu() {
-        Scanner sc = new Scanner(System.in);
-        int opcion;
-        do {
-            System.out.println();
-            System.out.print("""
-                         ----- Men\u00fa Principal -----
-                         1. Muestra la agenda
-                         2. Edita un contacto
-                         3. Elimina un contacto
-                         4. Salir
-                         Escribe una opción válida: """);
-            try {
-                opcion = sc.nextInt();
-            } catch (Exception ex) {
-                System.out.println("Escribe una opción numérica válida");
-                opcion = 5;
+    public static boolean menuPrincipal() {
+        System.out.println("");
+        System.out.println("MENU PRINCIPAL");
+        System.out.println("1. Listar agenda");
+        System.out.println("2. Nuevo contacto");
+        System.out.println("3. Modificar contacto");
+        System.out.println("4. Eliminar contacto");
+        System.out.println("5. Salir");
+        try {
+            int opcion = pideInt("Elige una opción: ");
+            switch (opcion) {
+                case 1:
+                    opcionMostrarContactos();
+                    return false;
+                case 2:
+                    opcionNuevoContacto();
+                    return false;
+                case 3:
+                    opcionModificarContacto();
+                    return false;
+                case 4:
+                    opcionEliminarContacto();
+                    return false;
+                case 5:
+                    return true;
+                default:
+                    System.out.println("Opción elegida incorrecta");
+                    return false;
             }
 
-        } while (opcion > 4);
-        return opcion;
+        } catch (Exception ex) {
+            System.out.println("Escribe una opción numérica válida");
+            return false;
+        }
+
     }
 
-    public static void muestraAgenda(ResultSet rs) throws SQLException {
+    public static int pideInt(String mensaje) {
 
-        Integer id;
-        String nombre, telefono;
-        while (rs.next()) {
-            id = rs.getInt("id");
-            nombre = rs.getString("nombre");
-            telefono = rs.getString("telefono");
-            System.out.println(id + nombre + telefono);
+        while (true) {
+            try {
+                System.out.print(mensaje);
+                Scanner sc = new Scanner(System.in);
+                int valor = sc.nextInt();
+                //in.nextLine();
+                return valor;
+            } catch (Exception e) {
+                System.out.println("No has introducido un número entero. Vuelve a intentarlo.");
+            }
         }
     }
 
-    public static Statement conectandoBD(Connection conn) throws SQLException {
-        Statement ejecutor = conn.createStatement();
-        return ejecutor;
+    public static String pideLinea(String mensaje) {
+
+        while (true) {
+            try {
+                System.out.print(mensaje);
+                Scanner sc = new Scanner(System.in);
+                String linea = sc.nextLine();
+                return linea;
+            } catch (Exception e) {
+                System.out.println("No has introducido una cadena de texto. Vuelve a intentarlo.");
+            }
+        }
+    }
+
+    public static void opcionMostrarContactos() {
+        System.out.println("Listado de Contacto:");
+        DBManager.printTablaContactos();
+    }
+
+    public static void opcionNuevoContacto() {
+        Scanner in = new Scanner(System.in);
+
+        System.out.println("Introduce los datos del nuevo contacto:");
+        String nombre = pideLinea("Nombre: ");
+        String telefono = pideLinea("Teléfono: ");
+
+        boolean res = DBManager.insertContacto(nombre, telefono);
+
+        if (res) {
+            System.out.println("Contacto registrado correctamente");
+        } else {
+            System.out.println("Error :(");
+        }
+    }
+
+    public static void opcionModificarContacto() {
+        Scanner in = new Scanner(System.in);
+
+        int id = pideInt("Indica el id del cliente a modificar: ");
+
+        // Comprobamos si existe el cliente
+        if (!DBManager.existsContacto(id)) {
+            System.out.println("El contacto " + id + " no existe.");
+            return;
+        }
+
+        // Mostramos datos del cliente a modificar
+        DBManager.printContacto(id);
+
+        // Solicitamos los nuevos datos
+        String nombre = pideLinea("Nuevo nombre: ");
+        String telefono = pideLinea("Nuevo telefono: ");
+
+        // Registramos los cambios
+        boolean res = DBManager.updateContacto(id, nombre, telefono);
+
+        if (res) {
+            System.out.println("Cliente modificado correctamente");
+        } else {
+            System.out.println("Error :(");
+        }
+    }
+
+    public static void opcionEliminarContacto() {
+        Scanner in = new Scanner(System.in);
+
+        int id = pideInt("Indica el id del contacto a eliminar: ");
+
+        // Comprobamos si existe el cliente
+        if (!DBManager.existsContacto(id)) {
+            System.out.println("El contacto " + id + " no existe.");
+            return;
+        }
+
+        // Eliminamos el contacto
+        boolean res = DBManager.deleteContacto(id);
+
+        if (res) {
+            System.out.println("Contacto eliminado correctamente");
+        } else {
+            System.out.println("Error :(");
+        }
     }
 
     public static void main(String[] args) {
-        try {
-            // TODO code application logic here
-            //Primero hay que cargar dinámicamente el Driver, pero he comprobado que funciona la conexión sin hacerlo
-            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-            System.out.println("No ha podido cargar el Driver");
-            ex.printStackTrace();
-        }
-        String baseDeDatos = "agenda";
-        String usuario = "root";
-        String password = "";
-        String direccionIPIES = "10.230.109.182";
-        String direccionIPHome = "192.168.1.159";
-        String direccionIP = "";
-        try {
-            //Leemos del teclado para elegir la IP del servidor en casa o en el IES
-            System.out.println("Si estás en casa escribe H de Home, en el instituto I de IES");
-            Scanner sc = new Scanner(System.in);
-            String respuesta = sc.next("[hHiI]");
-            switch (respuesta.toUpperCase()) {
-                case "H":
-                    direccionIP = direccionIPHome;
-                    break;
-                case "I":
-                    direccionIP = direccionIPIES;
-                    break;
-                default:;
-            }
-        } catch (Exception ex) {
-            System.out.println("Te empeñas en escribir cualquier cosa en vez de una letra H o I");
-        }
-        //Construyo la url de conexión a la BD
-        String url = "jdbc:mysql://" + direccionIP + ":3306/" + baseDeDatos + "?serverTimezone=UTC";
-        try {
-            Connection conexion = DriverManager.getConnection(url, usuario, password);
-            System.out.println("La conexión ha ido bien");
-            Statement ejecutor = conexion.createStatement();
-            System.out.println("Ya tengo el objeto ejecutor preparado");
-            //Lanzo el menú
-            int opcion = 1;
-            do {
-                opcion = menu();
-                switch (opcion) {
-                    case 1:
-                        muestraAgenda();
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        break;
-                    case 4:
-                        break;
-                    default:
-                        System.out.println("No debería ejecutarse esta opción del menú");
-                }
 
-            } while (opcion != 4);
-            //No puedo cerrar las conexiones antes de mostrar los resultados
-            ejecutor.close();
-            conexion.close();
-        } catch (SQLTimeoutException ex) {
-            System.out.println("Ha tardado demasiado tiempo sin responder el servidor");
-            ex.printStackTrace();
-        } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
-        }
+        //Cargo el driver y conecto la BD
+        DBManager.loadDriver();
+        DBManager.connect();
+
+        boolean salir = false;
+        do {
+            salir = menuPrincipal();
+        } while (!salir);
+
+        DBManager.close();
+
     }
 }
