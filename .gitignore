@@ -1,0 +1,12 @@
+#NetBeans específico#
+build/
+nbproject/
+
+#Class archivos#
+*.class
+
+#Package files#
+*.jar
+*.war
+*.ear
+
