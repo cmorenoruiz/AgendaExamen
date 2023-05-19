@@ -2,6 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+package agendaexamen;
 
 import java.sql.DriverManager;
 import java.sql.Connection;
@@ -21,7 +22,7 @@ public class DBManager {
 
     // Configuración de la conexión a la base de datos
     private static String IP_ADDRES_HOST = "localhost";
-    private static final String IP_ADDRESS_IES = "10.230.109.182";
+    private static final String IP_ADDRESS_IES = "10.230.109.71";
     private static final String IP_ADDRESS_HOME = "192.168.1.159";
 
     private static final String DB_PORT = "3306";
@@ -34,12 +35,12 @@ public class DBManager {
     private static final String DB_MSQ_CONN_OK = "CONEXIÓN CORRECTA";
     private static final String DB_MSQ_CONN_NO = "ERROR EN LA CONEXIÓN";
 
-    // Configuración de la tabla Clientes
-    private static final String DB_CLI = "clientes";
-    private static final String DB_CONT_SELECT = "SELECT * FROM " + DB_CLI;
+    // Configuración de la tabla Contactos
+    private static final String DB_CONT = "contactos";
+    private static final String DB_CONT_SELECT = "SELECT * FROM " + DB_CONT;
     private static final String DB_CONT_ID = "id";
     private static final String DB_CONT_NOM = "nombre";
-    private static final String DB_CONT_TEL = "direccion";
+    private static final String DB_CONT_TEL = "telefono";////OJOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
     //////////////////////////////////////////////////
     // MÉTODOS DE CONEXIÓN A LA BASE DE DATOS
@@ -173,7 +174,7 @@ public class DBManager {
     }
 
     /**
-     * Imprime por pantalla el contenido de la tabla clientes
+     * Imprime por pantalla el contenido de la tabla contacto
      */
     public static void printTablaContactos() {
         try {
@@ -197,7 +198,7 @@ public class DBManager {
     
     /**
      * Solicita a la BD el contacto con id indicado
-     * @param id id del cliente
+     * @param id id del contacto
      * @return ResultSet con el resultado de la consulta, null en caso de error
      */
     public static ResultSet getContacto(int id) {
@@ -214,7 +215,7 @@ public class DBManager {
                 return null;
             }
 
-            // Todo bien, devolvemos el cliente
+            // Todo bien, devolvemos el contacto
             return rs;
 
         } catch (SQLException ex) {
@@ -231,7 +232,7 @@ public class DBManager {
      */
     public static boolean existsContacto(int id) {
         try {
-            // Obtenemos el cliente
+            // Obtenemos el contacto
             ResultSet rs = getContacto(id);
 
             // Si rs es null, se ha producido un error
@@ -245,7 +246,7 @@ public class DBManager {
                 return false;
             }
 
-            // Todo bien, existe el cliente
+            // Todo bien, existe el contacto
             rs.close();
             return true;
 
@@ -258,14 +259,14 @@ public class DBManager {
     /**
      * Imprime los datos del contacto con id indicado
      *
-     * @param id id del cliente
+     * @param id id del contacto
      */
     public static void printContacto(int id) {
         try {
-            // Obtenemos el cliente
+            // Obtenemos el contacto
             ResultSet rs = getContacto(id);
             if (rs == null || !rs.first()) {
-                System.out.println("Cliente " + id + " NO EXISTE");
+                System.out.println("Contacto " + id + " NO EXISTE");
                 return;
             }
 
@@ -273,7 +274,7 @@ public class DBManager {
             int cid = rs.getInt(DB_CONT_ID);
             String nombre = rs.getString(DB_CONT_NOM);
             String telefono = rs.getString(DB_CONT_TEL);
-            System.out.println("Cliente " + cid + "\t" + nombre + "\t" + telefono);
+            System.out.println("Contacto " + cid + "\t" + nombre + "\t" + telefono);
 
         } catch (SQLException ex) {
             System.out.println("Error al solicitar contacto " + id);
@@ -282,7 +283,7 @@ public class DBManager {
     }
 
     /**
-     * Solicita a la BD insertar un nuevo registro cliente
+     * Solicita a la BD insertar un nuevo registro contacto
      *
      * @param nombre nombre del contacto
      * @param telefono dirección del contacto
@@ -290,8 +291,8 @@ public class DBManager {
      */
     public static boolean insertContacto(String nombre, String telefono) {
         try {
-            // Obtenemos la tabla clientes
-            System.out.print("Insertando cliente " + nombre + "...");
+            // Obtenemos la tabla contactos
+            System.out.print("Insertando contacto " + nombre + "...");
             ResultSet rs = DBManager.getTablaContactos(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
             // Insertamos el nuevo registro
@@ -359,7 +360,7 @@ public class DBManager {
         try {
             System.out.print("Eliminando contacto " + id + "... ");
 
-            // Obtenemos el cliente
+            // Obtenemos el contacto
             ResultSet rs = getContacto(id);
 
             // Si no existe el Resultset
